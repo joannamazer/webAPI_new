@@ -1,0 +1,74 @@
+[
+    {
+        "bounds": {
+            "northeast": {
+                "lat": 47.6573497, 
+                "lng": -122.304533
+            }, 
+            "southwest": {
+                "lat": 47.655016, 
+                "lng": -122.3048168
+            }
+        }, 
+        "copyrights": "Map data \u00a92017 Google", 
+        "legs": [
+            {
+                "distance": {
+                    "text": "0.2 mi", 
+                    "value": 265
+                }, 
+                "duration": {
+                    "text": "1 min", 
+                    "value": 66
+                }, 
+                "duration_in_traffic": {
+                    "text": "1 min", 
+                    "value": 55
+                }, 
+                "end_address": "225 E Stevens Way NE, Seattle, WA 98105, USA", 
+                "end_location": {
+                    "lat": 47.655016, 
+                    "lng": -122.3046113
+                }, 
+                "start_address": "4109 E Stevens Way NE, Seattle, WA 98105, USA", 
+                "start_location": {
+                    "lat": 47.6573497, 
+                    "lng": -122.3046303
+                }, 
+                "steps": [
+                    {
+                        "distance": {
+                            "text": "0.2 mi", 
+                            "value": 265
+                        }, 
+                        "duration": {
+                            "text": "1 min", 
+                            "value": 66
+                        }, 
+                        "end_location": {
+                            "lat": 47.655016, 
+                            "lng": -122.3046113
+                        }, 
+                        "html_instructions": "Head <b>south</b> on <b>E Stevens Way NE</b> toward <b>The Hub Access Walk</b>", 
+                        "polyline": {
+                            "points": "ma{aH|rniVb@PPFFBD@TDL?FAJATIVK\\Ob@Cl@GNAp@Af@@L?~@L"
+                        }, 
+                        "start_location": {
+                            "lat": 47.6573497, 
+                            "lng": -122.3046303
+                        }, 
+                        "travel_mode": "DRIVING"
+                    }
+                ], 
+                "traffic_speed_entry": [], 
+                "via_waypoint": []
+            }
+        ], 
+        "overview_polyline": {
+            "points": "ma{aH|rniVbA^TDTA`@Kt@[pAK`ACt@@~@L"
+        }, 
+        "summary": "E Stevens Way NE", 
+        "warnings": [], 
+        "waypoint_order": []
+    }
+]
