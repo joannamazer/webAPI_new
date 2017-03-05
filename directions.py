@@ -2,18 +2,36 @@ import texttable as tt  # print as table
 
 
 class routePoint(object):
-    def __init__(self, inLat, inLon, inEle=None, inStart=False, inEnd=False):
+    def __init__(   self, inLat, inLon, inSpeed=None, inEle=None, inStart=False,
+                    inEnd=False, inType='google'):
         self.lat   = inLat
         self.lon   = inLon
+        self.speed = inSpeed
         self.ele   = inEle
         self.start = inStart
         self.end   = inEnd
+        self.type  = inType
 
     def __repr__(self):
         return "<routePoint(lat: %s, lon: %s)>" % (self.lat, self.lon)
 
     def __str__(self):
         return "<routePoint(lat: %s, lon: %s)>" % (self.lat, self.lon)
+
+    def __getitem__(self, item):
+        if (item == 'lat'):
+            return self.lat
+        elif (item == 'lon'):
+            return self.lon
+        elif (item == 'speed'):
+            return self.speed
+        elif (item == 'type'):
+            return self.type
+        elif (item == 'ele'):
+            return self.ele
+        else:
+            return 'Cannot retrieve value for key (%s)', item
+
 
     def display(self):
         print("\n" + repr(self.lat) + "\t" + repr(self.lon) + "\t" + repr(self.ele) +
@@ -58,7 +76,7 @@ def routeInfo(startpnt, endpnt, key, mode='driving', plot=True, plotfile='google
     latitudes1 = []     # for plotting on map
     longitudes1 = []    # for plotting on map
     samples = 0;
-    
+
     #------ get lat and lon points from the dictionary ------#
     for item in dirResult[0]['legs'][0]['steps']:
         code = str(item['polyline']['points'])

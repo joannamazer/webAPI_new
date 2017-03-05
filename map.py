@@ -7,110 +7,127 @@ import matplotlib.pyplot as plt
 import pprint
 from collections import namedtuple
 import map_functions
+import googlemaps
+from elevation import Elevation
 
 
 GMAPI_KEY = 'AIzaSyDjLCEDNPFDYj8kzvwWXVaE3VO6ELF45qI'
 WAZE_URL = 'https://www.waze.com/'
 NUMBER_OF_PATHS = 1
 leg_node_array_total = {}
-node_attributes = namedtuple('node_attributes', ['lat', 'lon', 'speed', 'node_type'])
 
+def get_elevation(coordinate, samples):
+    client = googlemaps.Client(GMAPI_KEY)
+    # coordinate = {}
+    # coordinate['lat'] = 48
+    # coordinate['lng'] = -122
+    elevation = client.elevation_along_path(coordinate)
+    # print elevation
+    return elevation
+    # for i in range(0, samples):
+    #     routePoints[i].ele = elevation[i]['elevation']
+    #     if (i == samples-1):
+    #         routePoints[i].end = True
 
 #----- WAZE -----#
 def get_waze_nodes(complete_waze, parsed_waze):
-    waze_link_coordinates  = traffic.get_route(complete_waze)  # waze link coord
-    waze_nodes = {}
-    waze_nodes_complete = {}
+    waze_coords  = traffic.get_route(complete_waze)  # waze link coord
+
+    waze_data = {}
+    points = []
     waze_lat = []
     waze_lon = []
-    waze_node_type = []
-    waze_node_speed = []
+    waze_type = []
+    waze_speed = []
     node = 0
 
-    for i in range(len(waze_link_coordinates)):
+    for i in range(len(waze_coords)):
         node = node + 1
-        waze_nodes[node] = {}
-        waze_nodes_complete[node] = {}
+        waze_data[node] = {}
 
-        waze_lat.append(waze_link_coordinates[i][0])
-        waze_lon.append(waze_link_coordinates[i][1])
-        waze_node_speed.append(parsed_waze[node]['speed'])
-        waze_node_type.append('WAZE')
+        lat = waze_coords[i][0]
+        lon = waze_coords[i][1]
 
-        waze_nodes_complete[node]['lat'] = waze_link_coordinates[i][0]
-        waze_nodes_complete[node]['lon'] = waze_link_coordinates[i][1]
-        waze_nodes_complete[node]['speed'] = parsed_waze[node]['speed']
-        waze_nodes_complete[node]['node_type'] = 'WAZE'
+        waze_lat.append(lat)
+        waze_lon.append(lon)
+        waze_type.append('WAZE')
+        points.append([lat, lon])
 
-    map_functions.export_to_JSON(waze_nodes_complete, 'waze_nodes.json')
-    map_functions.plot_coords(waze_lat, waze_lon, waze_node_type, 16, 'waze_nodes.html')
-    return waze_nodes_complete
+        waze_data[node]['lat'] = lat
+        waze_data[node]['lon'] = lon
+        waze_data[node]['speed'] = parsed_waze[node]['speed']
+        waze_data[node]['ele'] = '0'
+        print waze_coords[i][1]
+        waze_data[node]['type'] = 'WAZE'
+
+    elevation = Elevation()
+    # print elevation.getElevations(points)
+    elevation_output = elevation.getElevations(points)
+
+    node = 0
+
+    for i in elevation_output:
+        node = node + 1
+        waze_data[node]['ele'] = i
+    map_functions.export_to_JSON(waze_data, 'waze_nodes.json')
+    map_functions.plot_coords(waze_lat, waze_lon, waze_type, 16, 'waze_nodes.html')
+    return waze_data
 
 
-
-def get_google_nodes(waze_count, route_index):
+def get_google_nodes(waze_count, waze_coords):
     g_lat = []
     g_lon = []
-    g_node_speed = []
-    g_node_type = []
+    g_speed = []
+    g_type = []
+    g_elev = []
 
     index = 1
-    waze_i = 1
+    waze_index = 1
     total_index = 1
     total_node_index = 1
 
     while (index < waze_count):
-        g_start     = [route_index[index].lat, route_index[index].lon]
-        g_end       = [route_index[index + 1].lat, route_index[index + 1].lon]
+        g_start     = [waze_coords[index]['lat'], waze_coords[index]['lon']]
+        g_end       = [waze_coords[index + 1]['lat'], waze_coords[index + 1]['lon']]
         leg_nodes   = directions.routeInfo(g_start, g_end, GMAPI_KEY)
         leg_size    = len(leg_nodes)
 
-        leg_node_array = {}
-        leg_node_index = 1
+        leg_index = 1
+        leg_array = {}
 
         for i in leg_nodes:
-            if (leg_node_index == 1) or (leg_node_index == waze_count):  # start node of google leg nodes
-                leg_node_array[leg_node_index] = route_index[waze_i]     # replace first leg index with waze point
-                g_lat.append(route_index[waze_i].lat)
-                g_lon.append(route_index[waze_i].lon)
+            leg_array[leg_index] = {}
+            if (leg_index == 1) or (leg_index == waze_count):  # start node of google leg nodes
+                leg_array[leg_index] = waze_coords[waze_index]     # replace first leg index with waze point
 
-                g_node_speed.append(route_index[waze_i].speed)
-                g_node_type.append(route_index[waze_i].node_type)
-                waze_i = waze_i + 1
+                g_lat.append(waze_coords[waze_index]['lat'])
+                g_lon.append(waze_coords[waze_index]['lon'])
+                g_type.append(waze_coords[waze_index]['type'])
+                waze_index = waze_index + 1
             else:
                 g_lat.append(i.lat)
                 g_lon.append(i.lon)
-                g_speed = 'n/a'
-                g_type = 'google'
+                g_type.append('google')
 
-                g_node_speed.append(g_speed)
-                g_node_type.append(g_type)
+                leg_array[leg_index]['lat'] = i.lat
+                leg_array[leg_index]['lon'] = i.lon
+                leg_array[leg_index]['speed'] = i.speed
+                leg_array[leg_index]['ele'] = i.ele
+                leg_array[leg_index]['type'] = i.type
 
-                g_index = node_attributes(  i.lat,
-                                            i.lon,
-                                            g_speed,
-                                            g_type)
-
-                leg_node_array[leg_node_index]['lat'] = g_index.lat
-                leg_node_array[leg_node_index]['lon'] = g_index.lon
-                leg_node_array[leg_node_index]['speed'] = g_index.speed
-                leg_node_array[leg_node_index]['node_type'] = g_index.node_type
-
-            leg_node_index = leg_node_index + 1
+            leg_index = leg_index + 1
             total_node_index = total_node_index + 1
-
-        for item in leg_node_array:
-            leg_node_array_total[total_index] = leg_node_array[item]
+        for item in leg_array:
+            leg_node_array_total[total_index] = leg_array[item]
             total_index = total_index + 1
         index = index + 1
 
     if (index == waze_count):
-        leg_node_array_total[total_index] = route_index[waze_count]     # replace first leg index with waze point
-        g_lat.append(route_index[waze_count].lat)
-        g_lon.append(route_index[waze_count].lon)
-        g_node_speed.append(route_index[waze_count].speed)
-        g_node_type.append(route_index[waze_count].node_type)
-    return [g_lat, g_lon, g_node_speed, g_node_type]
+        leg_node_array_total[total_index] = waze_coords[waze_count]     # replace first leg index with waze point
+        g_lat.append(waze_coords[waze_count]['lat'])
+        g_lon.append(waze_coords[waze_count]['lon'])
+        g_type.append(waze_coords[waze_count]['type'])
+    return [g_lat, g_lon, g_type]
 
 
 
@@ -132,10 +149,9 @@ def main():
     total_nodes = get_google_nodes(waze_count, route_index)
     g_lat       = total_nodes[0]
     g_lon       = total_nodes[1]
-    g_node_speed    = total_nodes[2]
-    g_node_type     = total_nodes[3]
+    g_type      = total_nodes[2]
 
-    map_functions.plot_coords(g_lat, g_lon, g_node_type, 16, 'total_nodes.html')
+    map_functions.plot_coords(g_lat, g_lon, g_type, 16, 'total_nodes.html')
     map_functions.export_to_JSON(leg_node_array_total, 'total_nodes.json')
 
 main()
